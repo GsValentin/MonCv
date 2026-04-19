@@ -12,9 +12,14 @@ import SwiftData
 struct CVApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootTabView()
         }
-        // Ici on active SwiftData (la mémoire de l'app)
-        .modelContainer(for: CVItem.self)
+        .modelContainer(for: [
+            ExperienceItem.self,
+            EducationItem.self,
+            SkillItem.self,
+            SocialLink.self,
+            PersonalInfoItem.self
+        ])
     }
 }
