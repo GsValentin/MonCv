@@ -9,10 +9,18 @@ import Foundation
 import SwiftData
 
 @Model
-final class Item {
-    var timestamp: Date
+class CVItem {
+    var id: UUID
+    var name: String
+    var role: String
+    var skills: String
+    var about: String
     
-    init(timestamp: Date) {
-        self.timestamp = timestamp
+    init(name: String, role: String, skills: String, about: String) {
+        self.id = UUID()
+        self.name = name
+        self.role = role
+        self.skills = skills
+        self.about = about
     }
 }

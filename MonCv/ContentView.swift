@@ -9,47 +9,84 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
+    
+    @Environment(\.modelContext) private var context
+    @Query private var cvs: [CVItem]
+    
+    @State private var showAdd = false
+    
     var body: some View {
-        NavigationSplitView {
+        NavigationView {
             List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+                ForEach(cvs) { cv in
+                    NavigationLink(destination: DetailView(cv: cv)) {
+                        VStack(alignment: .leading) {
+                            Text(cv.name)
+                                .font(.headline)
+                            Text(cv.role)
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
                     }
                 }
-                .onDelete(perform: deleteItems)
+                .onDelete(perform: deleteCV)
             }
+            .navigationTitle("Mes CV")
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
+                Button("Ajouter") {
+                    showAdd = true
                 }
             }
-        } detail: {
-            Text("Select an item")
+            .sheet(isPresented: $showAdd) {
+                AddCVView()
+            }
         }
     }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
+    
+    func deleteCV(at offsets: IndexSet) {
+        for index in offsets {
+            context.delete(cvs[index])
         }
     }
+}
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+// MARK: - 4. DETAIL D'UN CV
+
+struct DetailView: View {
+    var cv: CVItem
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            Text(cv.name).font(.largeTitle)
+            Text(cv.role).font(.title3)
+        }
+    }
+}
+struct AddCVView: View {
+    
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) private var context
+    
+    @State private var name = ""
+    @State private var role = ""
+    @State private var skills = ""
+    @State private var about = ""
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                TextField("Nom", text: $name)
+                TextField("Rôle", text: $role)
+                TextField("Compétences", text: $skills)
+                TextField("À propos", text: $about)
+            }
+            .navigationTitle("Nouveau CV")
+            .toolbar {
+                Button("Sauvegarder") {
+                    let newCV = CVItem(name: name, role: role, skills: skills, about: about)
+                    context.insert(newCV)
+                    dismiss()
+                }
             }
         }
     }
@@ -57,5 +94,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: CVItem.self, inMemory: true)
 }
